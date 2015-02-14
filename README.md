@@ -1,18 +1,17 @@
 # Koda lite webb!!
 
+Börja här:
+
 * [GitHub's Student Developer Pack](https://education.github.com/pack)
 
-## Skaffa en server
+Skaffa sedan en server här:
 
 * [DigitalOcean](https://www.digitalocean)
-* Glöm inte att generera rabattkod från GitHub!
 
-### Skapa en SSH-nyckel
+Glöm inte att använda din rabattkod från GitHub!
 
-[SSH](http://en.wikipedia.org/w/index.php?title=Secure_Shell) är ett protokoll
-att logga in på och administrera servrar.
-
-För att använda SSH behöver du din egen, personliga SSH-nyckel.
+För att logga in på din server behöver du en
+[SSH](http://en.wikipedia.org/w/index.php?title=Secure_Shell)-nyckel.
 
 Aldrig använt SSH innan?
 
@@ -21,16 +20,16 @@ Aldrig använt SSH innan?
 * GitHub har en bra
   [tutorial för Mac- och Linuxanvändare](https://help.github.com/articles/generating-ssh-keys/#platform-linux).
 
-### Skapa en VPS
+Nu ska vi skapa vår egen VPS.
 
-Börja med att ladda upp din publika SSH-nyckel:
+Börja med att ladda upp din publika SSH-nyckel på DigitalOcean:
 
-* [SSH keys](https://cloud.digitalocean.com/ssh_keys)
-  * [Add SSH Key](https://cloud.digitalocean.com/ssh_keys#new_ssh_key_form)
+* [Add SSH Key](https://cloud.digitalocean.com/ssh_keys#new_ssh_key_form)
 
 Sedan skapar du din VPS:
 
 * [Create droplet](https://cloud.digitalocean.com/droplets/new)
+
   * *Droplet hostname*: Namnet på din server, helt orelaterat till.
      domännamnet, som du kommer skaffa separat lite senare. I dessa
      exempel döper jag servern till `vps`.
@@ -72,21 +71,21 @@ Om du kör OSX eller Linux:
 ~~~
 ssh -A root@ditthostnamn.me
 
+The authenticity of host '188.166.12.226 (188.166.12.226)' can't be established.
+ECDSA key fingerprint is 07:be:14:76:bd:75:1c:82:03:b1:d1:de:68:dc:1b:2b.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '188.166.12.226' (ECDSA) to the list of known hosts.
 Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 3.13.0-43-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com/
 
-  System information as of Wed Feb 11 16:36:17 EST 2015
+  System information as of Sat Feb 14 04:03:47 EST 2015
 
-  System load:  0.0               Processes:           90
-  Usage of /:   5.2% of 39.25GB   Users logged in:     0
-  Memory usage: 8%                IP address for eth0: 178.62.209.139
-  Swap usage:   0%
+  System load: 0.0                Memory usage: 9%   Processes:       51
+  Usage of /:  10.8% of 19.56GB   Swap usage:   0%   Users logged in: 0
 
   Graph this data and manage this system at:
     https://landscape.canonical.com/
-
-Last login: Wed Feb 11 12:12:36 2015 from 82.99.14.165
 
 root@vps:~#
 ~~~
@@ -129,37 +128,71 @@ din nya användare, just nu ägs den av `root`-användaren.
 root@vps:~# chown -R user:user /home/user/.ssh
 ~~~
 
-Nu ska du kunna SSHa som din nya användare, så logga ut `root`-användaren:
+Din nya användare kommer behöva `sudo`-rättigheter för att installera
+saker. Såhär fixar du det:
+
+~~~
+root@vps:~# visudo
+~~~
+
+Du editerar nu filen `/etc/sudoers` med texteditorn `nano`. Använd
+piltangerterna för att navigera ned till raden som ser ut såhär:
+
+~~~
+# User privilege specification
+root    ALL=(ALL:ALL) ALL
+~~~
+
+Och gör så att den ser ut såhär:
+
+~~~
+# User privilege specification
+root    ALL=(ALL:ALL) ALL
+user    ALL=(ALL:ALL) ALL
+~~~
+
+För att spara: `Ctrl+X`, sedan `y`, sedan `Enter`.
+
+Nu har din nya användare sudo-rättigheter!
+
+Dags att SSHa in som din nya användare, så logga ut `root`-användaren:
 
 ~~~
 root@vps:~# exit
 ~~~
 
-och SSHa in som dig själv:
+och SSHa in som din nya användare:
 
 ~~~
-$ ssh -A user@ditthostnamn.me
+$ ssh -A user@188.166.12.226
 
 Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 3.13.0-43-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com/
 
-  System information as of Wed Feb 11 16:36:17 EST 2015
-
-  System load:  0.0               Processes:           90
-  Usage of /:   5.2% of 39.25GB   Users logged in:     0
-  Memory usage: 8%                IP address for eth0: 178.62.209.139
+  System load:  0.0                Processes:           67
+  Usage of /:   11.2% of 19.56GB   Users logged in:     0
+  Memory usage: 11%                IP address for eth0: 188.166.12.226
   Swap usage:   0%
 
   Graph this data and manage this system at:
     https://landscape.canonical.com/
 
-Last login: Wed Feb 11 12:12:36 2015 from 82.99.14.165
+0 packages can be updated.
+0 updates are security updates.
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
 
 user@vps:~$
 ~~~
 
-Wohoo, nu kan vi skrida till verket!
+Wohoo, dags skrida till verket!
 
 ## Exempelkod från livekodningen
 
@@ -169,10 +202,28 @@ Om du aldrig använt git eller och GitHub innan kan
 [denna tutorial](https://guides.github.com/activities/hello-world/#repository).
 vara till hjälp.
 
-Börja med att installera git på din server:
+Först vill vi installera `git` på servern.
+
+Börja med att hämta hem den senaste listan över vilka paket som går att installera:
+
+~~~
+user@vps:~$ sudo apt-get update
+[sudo] password for user:
+Ign http://security.ubuntu.com trusty-security InRelease
+Get:1 http://security.ubuntu.com trusty-security Release.gpg [933 B]
+Get:2 http://security.ubuntu.com trusty-security Release [62.0 kB]
+...
+~~~
+
+Installera sedan `git`.
 
 ~~~
 user@vps:~$ sudo apt-get install git
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+...
+Do you want to continue? [Y/n]
 ~~~
 
 Klona sedan detta repo:
@@ -182,36 +233,97 @@ user@vps:~$ git clone https://github.com/odsod/kodalitewebb
 ~~~
 
 ~~~
-user@vps:~$ cd kodalitewebb
+user@vps:~$ cd kodalitewebb/
 user@vps:~/kodalitewebb$ ls
+client.js  index.html  README.md  server.js  style.css
 ~~~
 
 Dags att installera [Nginx](http://nginx.org), vår webbserver.
 
 ~~~
-user@vps:~$ sudo apt-get install nginx
+user@vps:~/kodalitewebb$ sudo apt-get install nginx
+Reading package lists... Done
+...
+After this operation, 9,055 kB of additional disk space will be used.
+Do you want to continue? [Y/n]
 ~~~
 
-Nu vill vi konfigurera Nginx så att den servar filer från vårt
-git-repository.
+Nu vill vi konfigurera Nginx så att den servar våra filer.
 
-Om du inte är van vid att editera filer via kommandoraden har jag
-förberett en Nginx-konfig som du inte behöver ändra i, förutsatt att du
-döpte din användare till `user`.
-
-Börja med att ta bort default-konfigureringen:
+För att editera `/etc/nginx/sites-enabled/default` kan vi använda
+texteditorn `nano`, samma editor som vi använde för att lägga till oss i
+`/etc/sudoers`.
 
 ~~~
-user@vps:~/kodalitewebb$ sudo rm /etc/nginx/sites-enabled/default
+user@vps:~/kodalitewebb$ sudo nano /etc/nginx/sites-enabled/default
+
+GNU nano 2.2.6               File: /etc/nginx/sites-enabled/default
+
+# You may add here your
+# server {
+#       ...
+# }
+# statements for each of your virtual hosts to this file
+...
 ~~~
 
-Symlänka sedan in vår konfigurering:
+Använd piltangenterna för att navigera till raderna som ser ut såhär:
 
 ~~~
-user@vps:~/kodalitewebb$ sudo ln -s $PWD/nginx.conf.template /etc/nginx/sites-enabled/kodalitewebb
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server ipv6only=on;
+
+        root /usr/share/nginx/html;
 ~~~
 
-Den nya konfigureringen tar kraft så snart vi startar om Nginx:
+och ändra så att de ser ut såhär:
+
+~~~
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server ipv6only=on;
+
+        root /home/user/kodalitewebb/public;
+~~~
+
+Nu kommer Nginx att serva filer från mappen
+`/home/user/kodalitewebb/public` när man surfar in på vår sajt.
+
+Vi behöver göra en sak till, nämligen vidarebefodra alla URLer som börjar
+med `/api` till vår Node.js-server, som lyssnar på port `8080`.
+
+Gå till raderna som ser ut såhär:
+
+~~~
+location / {
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+        try_files $uri $uri/ =404;
+        # Uncomment to enable naxsi on this location
+        # include /etc/nginx/naxsi.rules
+}
+~~~
+
+och ändå så att de ser ut såhär:
+
+~~~
+location / {
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+        try_files $uri $uri/ =404;
+        # Uncomment to enable naxsi on this location
+        # include /etc/nginx/naxsi.rules
+}
+
+location /api {
+        proxy_pass http://localhost:8080;
+}
+~~~
+
+Spara genom att knappa in `Ctrl-x`, sedan `y`, sedan `Enter`.
+
+Den nya Nginx-konfigen tar kraft så snart vi startar om Nginx:
 
 ~~~
 user@vps:~/kodalitewebb$ sudo service nginx restart
@@ -230,10 +342,11 @@ user@vps:~/kodalitewebb$ sudo apt-get install nodejs npm
 Vår chattserver använder sig av [Express](http://expressjs.com), ett
 mycket användbart bibliotek när man kodar servrar.
 
-För att installera alla module vi dependar på:
+Eftersom vår server behöver parsa JSON-objekt behöver vi också
+installera modulen `body-parser`.
 
 ~~~
-user@vps:~/kodalitewebb$ npm install
+user@vps:~/kodalitewebb$ npm install express body-parser
 ~~~
 
 Starta servern, håll tummarna, och refresha din sajt!
@@ -241,3 +354,5 @@ Starta servern, håll tummarna, och refresha din sajt!
 ~~~
 user@vps:~/kodalitewebb$ nodejs server.js
 ~~~
+
+Funkar det?

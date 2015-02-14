@@ -1,5 +1,5 @@
 var inputElement = document.querySelector('input');
-var chatLogElement = document.querySelector('pre');
+var chatElement = document.querySelector('pre');
 
 var ajax = function(method, url, callback, data) {
   var request = new XMLHttpRequest();
@@ -15,19 +15,19 @@ var ajax = function(method, url, callback, data) {
   request.send(JSON.stringify(data));
 };
 
+var displayChatMessages = function(chatMessages) {
+  chatElement.textContent = chatMessages.reverse().join('\n');
+};
+
 var sendChatMessage = function(chatMessage) {
   ajax('POST', '/api/chat-messages', displayChatMessages, {text: chatMessage});
 };
 
-var displayChatMessages = function(chatMessages) {
-  chatLogElement.textContent = chatMessages.reverse().join('\n');
-};
-
 inputElement.addEventListener('keyup', function(e) {
-  if (e.keyCode === 13) { // enter key was pressed
+  if (e.keyCode === 13) { // enter key
     var chatMessage = inputElement.value;
-    sendChatMessage(chatMessage);
     inputElement.value = '';
+    sendChatMessage(chatMessage);
   }
 });
 
