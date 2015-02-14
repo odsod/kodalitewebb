@@ -4,7 +4,7 @@ Börja här:
 
 * [GitHub's Student Developer Pack](https://education.github.com/pack)
 
-Skaffa sedan en server här:
+## Skaffa en server
 
 * [DigitalOcean](https://www.digitalocean)
 
@@ -20,8 +20,6 @@ Aldrig använt SSH innan?
 * GitHub har en bra
   [tutorial för Mac- och Linuxanvändare](https://help.github.com/articles/generating-ssh-keys/#platform-linux).
 
-Nu ska vi skapa vår egen VPS.
-
 Börja med att ladda upp din publika SSH-nyckel på DigitalOcean:
 
 * [Add SSH Key](https://cloud.digitalocean.com/ssh_keys#new_ssh_key_form)
@@ -30,20 +28,16 @@ Sedan skapar du din VPS:
 
 * [Create droplet](https://cloud.digitalocean.com/droplets/new)
 
-  * *Droplet hostname*: Namnet på din server, helt orelaterat till.
-     domännamnet, som du kommer skaffa separat lite senare. I dessa
-     exempel döper jag servern till `vps`.
-  * *Select size*: börja med den billigaste.
-  * *Select region*: Välj Amsterdam eller London, så får du bäst latens när du
-     loggar in med SSH.
-  * *Select image*: Ubuntu 14.04 x64 är en
-                    [LTS-version](https://wiki.ubuntu.com/LTS)
-                    som passar utmärkt för servrar.
-  * *Add SSH keys*: Du borde se namnet på nyckeln du tidigare laddat upp.
-     Klicka på den, så att knappen blir blå!
+| Konfigurering    | Förklaring |
+|------------------|------------|
+| Droplet hostname | *Namnet på din server. I detta exempel döper vi servern till `vps`.* |
+| Select size      | *Den billigaste räcker alldeles utmärkt.* |
+| Select region    | *Amsterdam eller London ger dig bättre latens över SSH än New York* |
+| Select image     | *Ubuntu 14.04 x64 är en [LTS-version](https://wiki.ubuntu.com/LTS) som passar utmärkt för servrar* |
+| Add SSH keys     | *Välj SSH-nyckeln du laddat upp sedan tidigare.* |
 
 Du borde nu se din sprillans nya VPS i listan över dina servrar, notera
-dess IP, för nu ska vi skaffa ett domännamn som pekar till den IP-adressen.
+dess IP, för nu ska vi skaffa oss ett domännamn som pekar till den IP-adressen.
 
 ## Skaffa ett domännamn
 
@@ -64,7 +58,7 @@ Grattis, du har nu en egen server, med ett eget domännamn!
 
 ## Fixa iordning din server
 
-Nu kan du SSH:a till din nya server och börja mecka med den!
+Nu kan vi SSH:a till vår nya server och börja mecka med den!
 
 Om du kör OSX eller Linux:
 
@@ -95,11 +89,10 @@ Om du kör Windows, hänvisa tillbaka till DigitalOceans
 
 ### Skapa en användare
 
-Man ska helst inte rota runt på en server som `root`-användaren, den har
-nämligen tillåtelse att göra vad som helst, till exempel radera hela
-filsystemet. Det är typiskt dåligt.
+Man ska helst inte rota runt på en server som `root`-användaren.
 
-Skapa istället en användare för dig själv:
+Skapa istället en användare för dig själv. I detta exempel döper vi
+användaren till `user`.
 
 ~~~
 root@vps:~# adduser user
@@ -196,7 +189,7 @@ Wohoo, dags skrida till verket!
 
 ## Exempelkod från livekodningen
 
-Koden från livekodningen finns tillgänglig i detta GitHub repository.
+Koden från livekodningen finns tillgänglig i detta GitHub-repo.
 
 Om du aldrig använt git eller och GitHub innan kan
 [denna tutorial](https://guides.github.com/activities/hello-world/#repository).
@@ -237,6 +230,8 @@ user@vps:~$ cd kodalitewebb/
 user@vps:~/kodalitewebb$ ls
 client.js  index.html  README.md  server.js  style.css
 ~~~
+
+### Installera och konfigurera Nginx
 
 Dags att installera [Nginx](http://nginx.org), vår webbserver.
 
@@ -284,14 +279,13 @@ server {
         listen 80 default_server;
         listen [::]:80 default_server ipv6only=on;
 
-        root /home/user/kodalitewebb/public;
+        root /home/user/kodalitewebb;
 ~~~
 
-Nu kommer Nginx att serva filer från mappen
-`/home/user/kodalitewebb/public` när man surfar in på vår sajt.
+Nu kommer Nginx att serva filer från mappen `/home/user/kodalitewebb`.
 
-Vi behöver göra en sak till, nämligen vidarebefodra alla URLer som börjar
-med `/api` till vår Node.js-server, som lyssnar på port `8080`.
+Vi också vidarebefodra alla URLer som börjar med `/api` till vår
+Node.js-server, som lyssnar på port `8080`.
 
 Gå till raderna som ser ut såhär:
 
@@ -327,10 +321,15 @@ Den nya Nginx-konfigen tar kraft så snart vi startar om Nginx:
 
 ~~~
 user@vps:~/kodalitewebb$ sudo service nginx restart
+
+ * Restarting nginx nginx
+   ...done.
 ~~~
 
 Om du surfar in på din sajt nu, så bör du se vår `index.html`-sida, men
 chatten fungerar inte, eftersom vi måste starta vår chattserver först.
+
+### Installera och konfigurera Node.js
 
 Börja med att installera [Node.js](http://nodejs.org) och
 [npm](https://www.npmjs.org).
@@ -354,5 +353,3 @@ Starta servern, håll tummarna, och refresha din sajt!
 ~~~
 user@vps:~/kodalitewebb$ nodejs server.js
 ~~~
-
-Funkar det?
